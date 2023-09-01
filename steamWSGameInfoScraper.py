@@ -46,9 +46,29 @@ def getItems(driver, tabUrl):
     try:
         totalNumPages = int(driver.find_elements(By.CLASS_NAME, 'pagelink')[-1].text)
         print(totalNumPages)
+    #If there is only one page
     except selenium.common.exceptions.NoSuchElementException:
+        urlList = driver.find_elements(By.CLASS_NAME, "ugc")
+        if len(urlList) == 0:
+            print('No items found')
+            return items
+        hold = list()
+        for item in urlList:
+            hold.append(item.get_attribute("href"))
+        # time.sleep(0.3)
+        items.extend(hold)
         return items
+    #If there are no items
     except IndexError:
+        urlList = driver.find_elements(By.CLASS_NAME, "ugc")
+        if len(urlList) == 0:
+            print('No items found')
+            return items
+        hold = list()
+        for item in urlList:
+            hold.append(item.get_attribute("href"))
+        # time.sleep(0.3)
+        items.extend(hold)
         return items
     #loop through all pages
     for i in range(1, totalNumPages + 1):
@@ -75,8 +95,90 @@ def getItems(driver, tabUrl):
 
     return items
 
-def sendToDB(gameName='N/A',gameId='N/A',gameLink='N/A',noItems='N/A',noRTUItems='N/A',itemName='N/A',createdBy='N/A',itemSize='N/A',postedTime='N/A',updatedTime='N/A',itemDesc='N/A',isCurated='N/A',isRTU='N/A',noUniqVis='N/A',noFavs='N/A',noSubs='N/A',reviews='N/A',df=pd.read_csv('workshopGameScraper/workshopDB.csv')):
-    df = df.append({'gameName': gameName,'gameId':gameId,'gameLink':gameLink,'noItems':noItems,'noRTUItems':noRTUItems,'itemName':itemName,'createdBy':createdBy,'itemSize':itemSize,'postedTime':postedTime,'updatedTime':updatedTime,'itemDesc':itemDesc,'isCurated':isCurated,'isRTU':isRTU,'noUniqVis':noUniqVis,'noFavs':noFavs,'noSubs':noSubs,'reviews':reviews}, ignore_index=True)
+# Collects item info and adds it to db
+def getItemInfo(driver, itemUrl, df, numItems):
+    driver.get(itemUrl)
+    #get game name
+    gameName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
+    print("gameName:", gameName)
+    #get game id
+    gameId = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[2].get_attribute('href').split('appid=')[-1]
+    print("gameId:", gameId)
+    #get game link
+    gameLink = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[1].get_attribute('href')
+    print("gameLink:", gameLink)
+    #get number of items
+    noItems = numItems
+    print("noItems:", noItems)
+    #get number of RTU items
+    noRTUItems = numItems #not present on all pages
+    print("noRTUItems:", noRTUItems)
+    #get item name
+    itemName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
+    print("itemName:", itemName)
+    #get created by
+    createdBy = driver.find_element(By.CLASS_NAME, 'friendBlockContent').text
+    print("createdBy:", createdBy)
+
+    #get item size, posted time, updated time
+    details = driver.find_elements(By.CLASS_NAME, 'detailsStatRight')
+
+    #get item size
+    itemSize = details[0].text
+    print("itemSize:", itemSize)
+    #get posted time
+    postedTime = details[1].text
+    print("postedTime:", postedTime)
+    #get updated time
+    if len(details) == 3:
+        updatedTime = details[2].text
+    else:
+        updatedTime = 'N/A'
+    print("updatedTime:", updatedTime)
+    #get item description
+    itemDesc = driver.find_element(By.CLASS_NAME, 'workshopItemDescription').text
+    print("itemDesc:", itemDesc)
+    #get is curated
+    # isCurated = driver.find_element(By.CLASS_NAME, 'detailsStatRight').text
+    isCurated = 'N/A' #not present on all pages
+    print("isCurated:", isCurated)
+    #get is RTU
+    isRTU = 'N/A' #not present on all pages
+    print("isRTU:", isRTU)
+    #get number of unique visitors
+    noUniqVis = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div/div[2]/table/tbody/tr[1]/td[1]').text
+    print("noUniqVis:", noUniqVis)
+    #get number of favorites
+    nofavs = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div/div[2]/table/tbody/tr[3]/td[1]').text
+    print("nofavs:", nofavs)
+    #get number of subscriptions
+    noSubs = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div/div[2]/table/tbody/tr[2]/td[1]').text
+    print("noSubs:", noSubs)
+    #get reviews
+    ratingLink = driver.find_element(By.CSS_SELECTOR, '#detailsHeaderRight > div > div > img').get_attribute('src').split('/')[-1]
+
+    if ratingLink == '1-star_large.png?v=2':
+        rating = '1'
+    elif ratingLink == '2-star_large.png?v=2':
+        rating = '2'
+    elif ratingLink == '3-star_large.png?v=2':
+        rating = '3'
+    elif ratingLink == '4-star_large.png?v=2':
+        rating = '4'
+    elif ratingLink == '5-star_large.png?v=2':
+        rating = '5'
+    else:
+        rating = 'N/A'
+    print("ratinglink:", ratingLink)
+    print('rating:', rating)
+
+    sendToDB(gameName,gameId,gameLink,noItems,noRTUItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating,df) 
+
+
+def sendToDB(gameName='N/A',gameId='N/A',gameLink='N/A',noItems='N/A',noRTUItems='N/A',itemName='N/A',createdBy='N/A',itemSize='N/A',postedTime='N/A',updatedTime='N/A',itemDesc='N/A',isCurated='N/A',isRTU='N/A',noUniqVis='N/A',noFavs='N/A',noSubs='N/A',rating='N/A',df=pd.read_csv('workshopGameScraper/workshopDB.csv')):
+    #adds row to db
+    df.loc[len(df)] = {'gameName': gameName,'gameId':gameId,'gameLink':gameLink,'noItems':noItems,'noRTUItems':noRTUItems,'itemName':itemName,'createdBy':createdBy,'itemSize':itemSize,'postedTime':postedTime,'updatedTime':updatedTime,'itemDesc':itemDesc,'isCurated':isCurated,'isRTU':isRTU,'noUniqVis':noUniqVis,'noFavs':noFavs,'noSubs':noSubs,'rating':rating}
+    print(df)
     df.to_csv('workshopGameScraper/workshopDB.csv', index=False)
 
 # Create a new instance of the Chrome driver
@@ -84,14 +186,13 @@ driver = webdriver.Chrome()
 df = pd.read_csv('workshopGameScraper/workshopDB.csv')
 driver.get("https://steamcommunity.com/workshop/?browsesort=Alphabetical&browsefilter=Alphabetical&p=1")
 
-
 #gets the total number of games
 totalNumGames = driver.find_element(By.XPATH, "//*[@id=\"workshop_apps_total\"]").text
 #gets rid of the ',' in the number
 totalNumGames = int(totalNumGames[0:1] + totalNumGames[2:])
 
 # gameUrls = getGameUrls(driver, totalNumPages)
-gameUrls = ['https://steamcommunity.com/app/1856190/workshop/']
+gameUrls = ['https://steamcommunity.com/app/1905530/workshop/']
 
 for game in gameUrls:
     driver.get(game)
@@ -100,13 +201,19 @@ for game in gameUrls:
     browseList = [x + '&p=' for i, x in enumerate(browseTab.get_attribute('data-dropdown-html').split('\"')) if i % 2 == 1]
     for tabLink in browseList:
         driver.get(tabLink)
-        print(tabLink)  
+        print(tabLink)
+        try:
+            numItems = driver.find_element(By.CLASS_NAME, 'workshopBrowsePagingInfo').text.split(' ')[-2]
+        except:
+            numItems = 0
+        print('Num of Items is: ', numItems)
         gameItems = getItems(driver, tabLink)
         print(gameItems)
         print(len(gameItems))
+        if len(gameItems) != 0:
+            for item in gameItems:
+                getItemInfo(driver, item, df, numItems)
     
-
-
 
 # Print the final results
 # print(len(gameUrls))
