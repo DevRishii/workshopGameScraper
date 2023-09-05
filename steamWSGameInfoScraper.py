@@ -175,10 +175,9 @@ def getItemInfo(driver, itemUrl, df, numItems):
     sendToDB(gameName,gameId,gameLink,noItems,noRTUItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating,df) 
 
 
-def sendToDB(gameName='N/A',gameId='N/A',gameLink='N/A',noItems='N/A',noRTUItems='N/A',itemName='N/A',createdBy='N/A',itemSize='N/A',postedTime='N/A',updatedTime='N/A',itemDesc='N/A',isCurated='N/A',isRTU='N/A',noUniqVis='N/A',noFavs='N/A',noSubs='N/A',rating='N/A',df=pd.read_csv('workshopGameScraper/workshopDB.csv')):
+def sendToDB(gameName,gameId,gameLink,noItems,noRTUItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating,df):
     #adds row to db
-    df.loc[len(df)] = {'gameName': gameName,'gameId':gameId,'gameLink':gameLink,'noItems':noItems,'noRTUItems':noRTUItems,'itemName':itemName,'createdBy':createdBy,'itemSize':itemSize,'postedTime':postedTime,'updatedTime':updatedTime,'itemDesc':itemDesc,'isCurated':isCurated,'isRTU':isRTU,'noUniqVis':noUniqVis,'noFavs':noFavs,'noSubs':noSubs,'rating':rating}
-    print(df)
+    df.loc[len(df)] = [gameName,gameId,gameLink,noItems,noRTUItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating]
     df.to_csv('workshopGameScraper/workshopDB.csv', index=False)
 
 # Create a new instance of the Chrome driver
