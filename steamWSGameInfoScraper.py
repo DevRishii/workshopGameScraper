@@ -96,8 +96,7 @@ def getItems(driver, tabUrl):
     return items
 
 # Collects item info and adds it to db
-def getItemInfo(driver, itemUrl, df, numItems, gameName, tabLink, noOfficialItems):
-
+def getItemInfo(driver, itemUrl, df, numItems, gameName, tabLink, noOfficialItems, itemType):
     driver.get(itemUrl)
     #get game name
     # gameName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
@@ -116,7 +115,11 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, tabLink, noOfficialItem
     itemName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
     print("itemName:", itemName)
     #get created by
-    createdBy = driver.find_element(By.CLASS_NAME, 'friendBlockContent').text.replace('Offline', '').strip()
+    createdBy = driver.find_element(By.CLASS_NAME, 'friendBlockContent').text.replace('Offline', '').replace('Online','').strip()
+
+    if 'In-Game' in createdBy:
+        createdBy = createdBy.split('In-Game')[0].strip()
+
     print("createdBy:", createdBy)
 
     #get item size, posted time, updated time
@@ -146,7 +149,7 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, tabLink, noOfficialItem
     #get is curated and is RTU
     try:
         gltext = driver.find_element(By.CLASS_NAME, 'greenlight_controls').text
-        if 'officially accepted' in gltext:
+        if 'accepted' in gltext:
             isCurated = 'Yes'
             isRTU = 'No'
     except:
@@ -205,11 +208,11 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, tabLink, noOfficialItem
     print('rating:', rating)
 
     print('Sending to DB')
-    sendToDB(gameName,gameId,gameLink,noItems,noOfficialItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating,df) 
+    sendToDB(gameName,gameId,gameLink,itemType,noItems,noOfficialItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating,df) 
 
-def sendToDB(gameName,gameId,gameLink,noItems,noOfficialItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating,df):
+def sendToDB(gameName,gameId,gameLink,itemType,noItems,noOfficialItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating,df):
     #adds row to db
-    df.loc[len(df)] = [gameName,gameId,gameLink,noItems,noOfficialItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating]
+    df.loc[len(df)] = [gameName,gameId,gameLink,itemType,noItems,noOfficialItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating]
     print('after:',df)
     df.to_csv('workshopDB.csv', index=False)
     print('SUCCESSFULLY ADDED TO DB')
@@ -241,6 +244,12 @@ for game in gameUrls:
         except:
             numItems = 0
         print('Num of Items is: ', numItems)
+        
+        #get item type
+        try:
+            itemType = driver.find_element(By.CLASS_NAME, 'workshop_browsing_section').text
+        except:
+            itemType = 'N/A'
 
         #get number of official items
         try:
@@ -259,10 +268,6 @@ for game in gameUrls:
             for item in gameItems:
                 getItemInfo(driver, item, df, numItems, gameName, tabLink, noOfficialItems)
     
-
-# Print the final results
-# print(len(gameUrls))
-# print(totalNumGames)
 
 # Quit the driver
 driver.quit() 
