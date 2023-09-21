@@ -96,7 +96,7 @@ def getItems(driver, tabUrl):
     return items
 
 # Collects item info and adds it to db
-def getItemInfo(driver, itemUrl, df, numItems, gameName, tabLink, noOfficialItems, itemType):
+def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType, noOfficialItems):
     driver.get(itemUrl)
     #get game name
     # gameName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
@@ -115,10 +115,20 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, tabLink, noOfficialItem
     itemName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
     print("itemName:", itemName)
     #get created by
-    createdBy = driver.find_element(By.CLASS_NAME, 'friendBlockContent').text.replace('Offline', '').replace('Online','').strip()
+    createdByList = driver.find_elements(By.CLASS_NAME, 'friendBlockContent')
 
-    if 'In-Game' in createdBy:
-        createdBy = createdBy.split('In-Game')[0].strip()
+    # createdByList = [x.text.replace('Offline', '').replace('Online','').split('In-Game')[0].strip() for x in createdByList]
+    createdBy = ''
+    for name in createdByList:
+        print('name is:', name)
+        x = name.text
+        print('x is before:', x)
+        x = x.replace('Offline', '').replace('Online','').split('In-Game')[0].strip()
+        print('x is after:', x)
+        createdBy += x + ',\n'
+        print('createdBy is:', createdBy)
+    createdBy = createdBy.strip(',\n')
+    print('FINAL createdBy is:', createdBy)
 
     print("createdBy:", createdBy)
 
@@ -208,11 +218,11 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, tabLink, noOfficialItem
     print('rating:', rating)
 
     print('Sending to DB')
-    sendToDB(gameName,gameId,gameLink,itemType,noItems,noOfficialItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating,df) 
+    sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating,df) 
 
-def sendToDB(gameName,gameId,gameLink,itemType,noItems,noOfficialItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating,df):
+def sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating,df):
     #adds row to db
-    df.loc[len(df)] = [gameName,gameId,gameLink,itemType,noItems,noOfficialItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating]
+    df.loc[len(df)] = [gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating]
     print('after:',df)
     df.to_csv('workshopDB.csv', index=False)
     print('SUCCESSFULLY ADDED TO DB')
@@ -227,8 +237,9 @@ totalNumGames = driver.find_element(By.XPATH, "//*[@id=\"workshop_apps_total\"]"
 #gets rid of the ',' in the number
 totalNumGames = int(totalNumGames[0:1] + totalNumGames[2:])
 
-gameUrls = getGameUrls(driver)
+# gameUrls = getGameUrls(driver)
 # gameUrls = ['https://steamcommunity.com/app/1905530/workshop/','https://steamcommunity.com/app/866510/workshop/','https://steamcommunity.com/app/1996600/workshop/']
+gameUrls = ['https://steamcommunity.com/app/614910/workshop/']
 
 for game in gameUrls:
     driver.get(game)
@@ -249,6 +260,7 @@ for game in gameUrls:
         try:
             itemType = driver.find_element(By.CLASS_NAME, 'workshop_browsing_section').text
         except:
+            print('NO ITEM TYPE FOUND ON THIS PAGE: ', tabLink)
             itemType = 'N/A'
 
         #get number of official items
@@ -266,7 +278,7 @@ for game in gameUrls:
         print(len(gameItems))
         if len(gameItems) != 0:
             for item in gameItems:
-                getItemInfo(driver, item, df, numItems, gameName, tabLink, noOfficialItems)
+                getItemInfo(driver, item, df, numItems, gameName, itemType, noOfficialItems)
     
 
 # Quit the driver
