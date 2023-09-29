@@ -16,18 +16,18 @@ def getGameUrls(driver):
             try:
                 gameList = driver.find_elements(By.CLASS_NAME, "app")
                 activePage = int(driver.find_element(By.CSS_SELECTOR, "#workshop_apps_links > span.workshop_apps_paging_pagelink.active").text)
-                print("Current Page(IDE):", i + 1)
-                print("Current Page(Browser):", activePage)
+                #print("Current Page(IDE):", i + 1)
+                #print("Current Page(Browser):", activePage)
                 
                 urlList = list()
                 # Get the URLs of every game in workshop
                 for game in gameList:
                     urlList.append(game.get_attribute("onclick")[19:-1])
-                print(len(urlList))
+                #print(len(urlList))
                 # Click the next page button
                 if activePage == i + 1:
                     urls.extend(urlList)
-                    print(len(urls))
+                    #print(len(urls))
                     driver.find_element(By.ID, "workshop_apps_btn_next").click()
                     time.sleep(0.3)
                     break  # Exit the loop if the actions were successful
@@ -45,7 +45,7 @@ def getItems(driver, tabUrl):
     # Get the total number of pages
     try:
         totalNumPages = int(driver.find_elements(By.CLASS_NAME, 'pagelink')[-1].text)
-        print(totalNumPages)
+        #print(totalNumPages)
     #If there is only one page
     except selenium.common.exceptions.NoSuchElementException:
         urlList = driver.find_elements(By.CLASS_NAME, "ugc")
@@ -81,12 +81,12 @@ def getItems(driver, tabUrl):
                 hold = list()
                 for item in urlList:
                     hold.append(item.get_attribute("href"))
-                print(len(hold))
+                #print(len(hold))
 
                 # time.sleep(0.3)
                 items.extend(hold)
-                print(len(items))
-                print('going to page:',i + 1)
+                #print(len(items))
+                #print('going to page:',i + 1)
                 driver.get(tabUrl + str(i + 1))
                 break
             except selenium.common.exceptions.StaleElementReferenceExceptin:
@@ -96,80 +96,104 @@ def getItems(driver, tabUrl):
     return items
 
 # Collects item info and adds it to db
-def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType, noOfficialItems):
+def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
     driver.get(itemUrl)
     #get game name
     # gameName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
-    print("gameName:", gameName)
+    #print("gameName:", gameName)
     #get game id
     gameId = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[2].get_attribute('href').split('appid=')[-1]
-    print("gameId:", gameId)
+    #print("gameId:", gameId)
     #get game link
     gameLink = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[1].get_attribute('href')
-    print("gameLink:", gameLink)
+    #print("gameLink:", gameLink)
     #get number of items
     noItems = numItems
-    print("noItems:", noItems)
+    #print("noItems:", noItems)
     
     #get item name
     itemName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
-    print("itemName:", itemName)
+    #print("itemName:", itemName)
     #get created by
     createdByList = driver.find_elements(By.CLASS_NAME, 'friendBlockContent')
 
     # createdByList = [x.text.replace('Offline', '').replace('Online','').split('In-Game')[0].strip() for x in createdByList]
     createdBy = ''
     for name in createdByList:
-        print('name is:', name)
         x = name.text
-        print('x is before:', x)
         x = x.replace('Offline', '').replace('Online','').split('In-Game')[0].strip()
-        print('x is after:', x)
         createdBy += x + ',\n'
-        print('createdBy is:', createdBy)
     createdBy = createdBy.strip(',\n')
-    print('FINAL createdBy is:', createdBy)
+    #print("createdBy:", createdBy)
 
-    print("createdBy:", createdBy)
-
-    #get item size, posted time, updated time
-    details = driver.find_elements(By.CLASS_NAME, 'detailsStatRight')
-
-    #get item size
-    itemSize = details[0].text
-    print("itemSize:", itemSize)
-    #get posted time
-    postedTime = details[1].text
-    print("postedTime:", postedTime)
-    #get updated time
-    if len(details) == 3:
-        updatedTime = details[2].text
+    if itemType == 'Collections':
+        details = driver.find_elements(By.CLASS_NAME, 'detailsStatRight')
+        #get item size
+        itemSize = 'N/A'
+        #print("itemSize:", itemSize)
+        #get posted time
+        # postedTime = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div[2]/div[4]/div/div[2]/div[1]').text
+        postedTime = details[3].text
+        #print("postedTime:", postedTime)
+        #get updated time
+        if len(details) == 5:
+            updatedTime = details[4].text
+        else:
+            updatedTime = 'N/A'
+        # try:
+        #     updatedTime = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div[2]/div[4]/div/div[2]/div[2]').text
+        # except:
+        #     updatedTime = 'N/A'
+        #print("updatedTime:", updatedTime)
     else:
-        updatedTime = 'N/A'
-    print("updatedTime:", updatedTime)
+        #get item size, posted time, updated time
+        details = driver.find_elements(By.CLASS_NAME, 'detailsStatRight')
+
+        #get item size
+        itemSize = details[0].text
+        #print("itemSize:", itemSize)
+        #get posted time
+        postedTime = details[1].text
+        #print("postedTime:", postedTime)
+        #get updated time
+        if len(details) == 3:
+            updatedTime = details[2].text
+        else:
+            updatedTime = 'N/A'
+        #print("updatedTime:", updatedTime)
 
     try:
         #get item description
         itemDesc = driver.find_element(By.CLASS_NAME, 'workshopItemDescription').text
-        print("itemDesc:", itemDesc)
+        #print("itemDesc:", itemDesc)
     except:
         itemDesc = 'N/A'
-        print("itemDesc:", itemDesc)
+        #print("itemDesc:", itemDesc)
 
-    #get is curated and is RTU
+    #get is curated and is RTU and is accepted
     try:
         gltext = driver.find_element(By.CLASS_NAME, 'greenlight_controls').text
-        if 'accepted' in gltext:
+        if 'Would you like' in gltext: 
             isCurated = 'Yes'
             isRTU = 'No'
+            isAccepted = 'No'
+        elif 'This item has been accepted' in gltext:
+            isCurated = 'Yes'
+            isRTU = 'No'
+            isAccepted = 'Yes'
+        else:
+            print('Not accepted or curated, this is the text:', gltext)
     except:
         isCurated = 'No'
         isRTU = 'Yes'
+        isAccepted = 'No'
 
-    print("isCurated:", isCurated)
-    print("isRTU:", isRTU)
+    #print("isCurated:", isCurated)
+    #print("isRTU:", isRTU)
+    #print("isAccepted:", isAccepted)
+    
 
-    print("noOfficialItems:", noOfficialItems)
+    # print("noOfficialItems:", noOfficialItems)
 
     try:
         #get number of unique visitors
@@ -179,7 +203,7 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType, noOfficialIte
             noUniqVis = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div[2]/div[1]/div/div[1]/div[1]').text
         except:
             noUniqVis = 'N/A'
-    print("noUniqVis:", noUniqVis)
+    #print("noUniqVis:", noUniqVis)
     
     try:
         #get number of favorites
@@ -189,13 +213,13 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType, noOfficialIte
             nofavs = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div[2]/div[1]/div/div[1]/div[2]').text
         except:
             nofavs = 'N/A'
-    print("nofavs:", nofavs)
+    #print("nofavs:", nofavs)
     try:
         #get number of subscriptions
         noSubs = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div/div[2]/table/tbody/tr[2]/td[1]').text
     except:
         noSubs = 'N/A'
-    print("noSubs:", noSubs)
+    #print("noSubs:", noSubs)
     try:
         #get ratings
         ratingLink = driver.find_element(By.CSS_SELECTOR, '#detailsHeaderRight > div > div > img').get_attribute('src').split('/')[-1]
@@ -214,16 +238,16 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType, noOfficialIte
     except:
         rating = 'N/A'
         ratingLink = 'N/A'
-    print("ratinglink:", ratingLink)
-    print('rating:', rating)
+    #print("ratinglink:", ratingLink)
+    #print('rating:', rating)
 
     print('Sending to DB')
-    sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating,df) 
+    sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,nofavs,noSubs,rating,df) 
 
-def sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating,df):
+def sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,nofavs,noSubs,rating,df):
     #adds row to db
-    df.loc[len(df)] = [gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,noUniqVis,nofavs,noSubs,rating]
-    print('after:',df)
+    df.loc[len(df)] = [gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,nofavs,noSubs,rating]
+    #print('after:',df)
     df.to_csv('workshopDB.csv', index=False)
     print('SUCCESSFULLY ADDED TO DB')
 
@@ -237,24 +261,27 @@ totalNumGames = driver.find_element(By.XPATH, "//*[@id=\"workshop_apps_total\"]"
 #gets rid of the ',' in the number
 totalNumGames = int(totalNumGames[0:1] + totalNumGames[2:])
 
-# gameUrls = getGameUrls(driver)
-# gameUrls = ['https://steamcommunity.com/app/1905530/workshop/','https://steamcommunity.com/app/866510/workshop/','https://steamcommunity.com/app/1996600/workshop/']
-gameUrls = ['https://steamcommunity.com/app/614910/workshop/']
+gameUrls = getGameUrls(driver)
+# gameUrls = ['https://steamcommunity.com/app/1905530/workshop/','https://steamcommunity.com/app/866510/workshop/','https://steamcommunity.com/app/1996600/workshop/','https://steamcommunity.com/app/614910/workshop/']
+# gameUrls = ['https://steamcommunity.com/app/614910/workshop/']
 
 for game in gameUrls:
     driver.get(game)
     browseTab = driver.find_element(By.XPATH, '//*[@id="responsive_page_template_content"]/div[1]/div[1]/div[3]/div/div[2]/div[2]/a')
     # Gets a list of all the links in the browse tab and grabs the ones that are links
-    browseList = [x + '&p=' for i, x in enumerate(browseTab.get_attribute('data-dropdown-html').split('\"')) if i % 2 == 1]
+    # browseList = [x + '&p=' for i, x in enumerate(browseTab.get_attribute('data-dropdown-html').split('\"')) if i % 2 == 1]
+    # print(browseList)
+    appId = game.split('/')[-3]
+    browseList = ['https://steamcommunity.com/workshop/browse/?appid='+ appId +'&browsesort=trend&section=readytouseitems&p=', 'https://steamcommunity.com/workshop/browse/?appid='+ appId +'&browsesort=trend&section=collections&p=', 'https://steamcommunity.com/workshop/browse/?appid='+ appId +'&browsesort=trend&section=mtxitems&p=', 'https://steamcommunity.com/workshop/browse/?appid='+ appId +'&browsesort=accepted&section=mtxitems&p=1&browsefilter=accepted&p=']
     gameName = driver.find_element(By.CLASS_NAME, 'apphub_AppName').text
     for tabLink in browseList:
         driver.get(tabLink)
-        print(tabLink)
+        #print(tabLink)
         try:
             numItems = driver.find_element(By.CLASS_NAME, 'workshopBrowsePagingInfo').text.split(' ')[-2]
         except:
             numItems = 0
-        print('Num of Items is: ', numItems)
+        #print('Num of Items is: ', numItems)
         
         #get item type
         try:
@@ -263,22 +290,22 @@ for game in gameUrls:
             print('NO ITEM TYPE FOUND ON THIS PAGE: ', tabLink)
             itemType = 'N/A'
 
-        #get number of official items
-        try:
-            if 'mtxitems' in tabLink:
-                driver.get(tabLink.split('&')[0] + '&browsesort=accepted&section=mtxitems&p=1&browsefilter=accepted')
-                noOfficialItems = driver.find_element(By.CLASS_NAME, 'workshopBrowsePagingInfo').text.split(' ')[-2]
-            else:
-                noOfficialItems = numItems
-        except:
-            noOfficialItems = numItems
+        # #get accepted items
+        # try:
+        #     if 'mtxitems' in tabLink:
+        #         # driver.get(tabLink.split('&')[0] + '&browsesort=accepted&section=mtxitems&p=1&browsefilter=accepted')
+        #         # noOfficialItems = driver.find_element(By.CLASS_NAME, 'workshopBrowsePagingInfo').text.split(' ')[-2]
+        #         gameItems.extend(getItems(driver, tabLink.split('&')[0] + '&browsesort=accepted&section=mtxitems&p=1&browsefilter=accepted'))
+        # except:
+        #     pass
 
         gameItems = getItems(driver, tabLink)
-        print(gameItems)
-        print(len(gameItems))
+        # print(gameItems)
+        # print(len(gameItems))
         if len(gameItems) != 0:
+            print('Getting Item Info')
             for item in gameItems:
-                getItemInfo(driver, item, df, numItems, gameName, itemType, noOfficialItems)
+                getItemInfo(driver, item, df, numItems, gameName, itemType)
     
 
 # Quit the driver
