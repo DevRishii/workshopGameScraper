@@ -167,7 +167,7 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
         itemDesc = driver.find_element(By.CLASS_NAME, 'workshopItemDescription').text
         #print("itemDesc:", itemDesc)
     except Exception as e:
-        sendToErrors(str(e), itemUrl, 'itemDesc could not be found')
+        # sendToErrors(str(e), itemUrl, 'itemDesc could not be found')
         itemDesc = 'N/A'
         #print("itemDesc:", itemDesc)
 
@@ -201,6 +201,8 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
     try:
         panels = driver.find_element(By.CLASS_NAME, 'stats_table')
         panels = panels.find_elements(By.TAG_NAME, 'tr')
+        noSubs = 'N/A'
+        
         rows = [row.text for row in panels]
         for row in rows:
             if 'Unique Visitors' in row:
@@ -274,10 +276,10 @@ totalNumGames = driver.find_element(By.XPATH, "//*[@id=\"workshop_apps_total\"]"
 #gets rid of the ',' in the number
 totalNumGames = int(totalNumGames[0:1] + totalNumGames[2:])
 
-# gameUrls = getGameUrls(driver)
+gameUrls = getGameUrls(driver)
 # gameUrls = ['https://steamcommunity.com/app/1905530/workshop/','https://steamcommunity.com/app/866510/workshop/','https://steamcommunity.com/app/1996600/workshop/','https://steamcommunity.com/app/614910/workshop/']
 # gameUrls = ['https://steamcommunity.com/app/614910/workshop/']
-gameUrls = ['https://steamcommunity.com/app/866510/workshop/']
+# gameUrls = ['https://steamcommunity.com/app/866510/workshop/']
 
 for game in gameUrls:
     driver.get(game)
