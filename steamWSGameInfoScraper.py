@@ -11,14 +11,15 @@ def getGameUrls(driver):
     
     # Get the total number of pages
     totalNumPages = int(driver.find_elements(By.CLASS_NAME, "workshop_apps_paging_pagelink")[-1].text)
+    print("Total Number of Pages:", totalNumPages)
 
     for i in range(totalNumPages):
         while True:
             try:
                 gameList = driver.find_elements(By.CLASS_NAME, "app")
                 activePage = int(driver.find_element(By.CSS_SELECTOR, "#workshop_apps_links > span.workshop_apps_paging_pagelink.active").text)
-                #print("Current Page(IDE):", i + 1)
-                #print("Current Page(Browser):", activePage)
+                print("Current Page(IDE):", i + 1)
+                print("Current Page(Browser):", activePage)
                 
                 urlList = list()
                 # Get the URLs of every game in workshop
@@ -283,7 +284,9 @@ totalNumGames = driver.find_element(By.XPATH, "//*[@id=\"workshop_apps_total\"]"
 #gets rid of the ',' in the number
 totalNumGames = int(totalNumGames[0:1] + totalNumGames[2:])
 
+print('Getting Game URLs')
 gameUrls = getGameUrls(driver)
+print('Game URLs obtained, total of:', len(gameUrls))
 # gameUrls = ['https://steamcommunity.com/app/1905530/workshop/','https://steamcommunity.com/app/866510/workshop/','https://steamcommunity.com/app/1996600/workshop/','https://steamcommunity.com/app/614910/workshop/']
 # gameUrls = ['https://steamcommunity.com/app/614910/workshop/']
 # gameUrls = ['https://steamcommunity.com/app/866510/workshop/']
@@ -322,10 +325,10 @@ for game in gameUrls:
         #         gameItems.extend(getItems(driver, tabLink.split('&')[0] + '&browsesort=accepted&section=mtxitems&p=1&browsefilter=accepted'))
         # except:
         #     pass
-
+        print('Getting Items from game:', gameName, 'and tab:', itemType)
         gameItems = getItems(driver, tabLink)
-        # print(gameItems)
-        # print(len(gameItems))
+        print('Items obtained, total of:', len(gameItems))
+
         if len(gameItems) != 0:
             print('Getting Item Info')
             for item in gameItems:
