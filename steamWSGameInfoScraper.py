@@ -166,7 +166,8 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
         #get item description
         itemDesc = driver.find_element(By.CLASS_NAME, 'workshopItemDescription').text
         #print("itemDesc:", itemDesc)
-    except:
+    except Exception as e:
+        sendToErrors(str(e), itemUrl, 'itemDesc could not be found')
         itemDesc = 'N/A'
         #print("itemDesc:", itemDesc)
 
@@ -194,32 +195,36 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
     
 
     # print("noOfficialItems:", noOfficialItems)
-
-    try:
-        #get number of unique visitors
-        noUniqVis = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div/div[2]/table/tbody/tr[1]/td[1]').text
-    except:
-        try:
-            noUniqVis = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div[2]/div[1]/div/div[1]/div[1]').text
-        except:
-            noUniqVis = 'N/A'
-    #print("noUniqVis:", noUniqVis)
     
+    
+    #Get number of unique visitors, favorites, subscriptions
     try:
-        #get number of favorites
-        nofavs = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div/div[2]/table/tbody/tr[3]/td[1]').text
+        panels = driver.find_element(By.CLASS_NAME, 'stats_table')
+        panels = panels.find_elements(By.TAG_NAME, 'tr')
+        rows = [row.text for row in panels]
+        for row in rows:
+            if 'Unique Visitors' in row:
+                noUniqVis = row.split(' ')[0]
+            elif 'Current Subscribers' in row:
+                noSubs = row.split(' ')[0]
+            elif 'Current Favorites' in row:
+                nofavs = row.split(' ')[0]
+            else:
+                print('NEW ROW DATA: ', row)
     except:
+
         try:
-            nofavs = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div[2]/div[1]/div/div[1]/div[2]').text
-        except:
+            panel = driver.find_element(By.CLASS_NAME, 'detailsStatsContainerLeft')
+            stats = panel.text.split('\n')
+            noUniqVis = stats[0]
+            noSubs = stats[1]
+            nofavs = stats[2]
+        except Exception as e:
+            sendToErrors(str(e), itemUrl, 'noUniqVis, noSubs, noFavs could not be found')
+            noUniqVis = 'N/A'
+            noSubs = 'N/A'
             nofavs = 'N/A'
-    #print("nofavs:", nofavs)
-    try:
-        #get number of subscriptions
-        noSubs = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div/div[2]/table/tbody/tr[2]/td[1]').text
-    except:
-        noSubs = 'N/A'
-    #print("noSubs:", noSubs)
+        
     try:
         #get ratings
         ratingLink = driver.find_element(By.CSS_SELECTOR, '#detailsHeaderRight > div > div > img').get_attribute('src').split('/')[-1]
@@ -235,7 +240,8 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
             rating = '5'
         else:
             rating = 'N/A'
-    except:
+    except Exception as e:
+        sendToErrors(str(e), itemUrl, 'rating could not be found')
         rating = 'N/A'
         ratingLink = 'N/A'
     #print("ratinglink:", ratingLink)
@@ -251,6 +257,13 @@ def sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSi
     df.to_csv('workshopDB.csv', index=False)
     print('SUCCESSFULLY ADDED TO DB')
 
+def sendToErrors(errorMessage,link,note):
+    df = pd.read_csv('errors.csv')
+    #adds row to db
+    df.loc[len(df)] = [errorMessage,link,note]
+    df.to_csv('errors.csv', index=False)
+    
+
 # Create a new instance of the Chrome driver
 driver = webdriver.Chrome()
 df = pd.read_csv('workshopDB.csv')
@@ -261,9 +274,10 @@ totalNumGames = driver.find_element(By.XPATH, "//*[@id=\"workshop_apps_total\"]"
 #gets rid of the ',' in the number
 totalNumGames = int(totalNumGames[0:1] + totalNumGames[2:])
 
-gameUrls = getGameUrls(driver)
+# gameUrls = getGameUrls(driver)
 # gameUrls = ['https://steamcommunity.com/app/1905530/workshop/','https://steamcommunity.com/app/866510/workshop/','https://steamcommunity.com/app/1996600/workshop/','https://steamcommunity.com/app/614910/workshop/']
 # gameUrls = ['https://steamcommunity.com/app/614910/workshop/']
+gameUrls = ['https://steamcommunity.com/app/866510/workshop/']
 
 for game in gameUrls:
     driver.get(game)
@@ -279,15 +293,16 @@ for game in gameUrls:
         #print(tabLink)
         try:
             numItems = driver.find_element(By.CLASS_NAME, 'workshopBrowsePagingInfo').text.split(' ')[-2]
-        except:
+        except Exception as e:
+            sendToErrors(str(e), tabLink, 'numItems could not be found')
             numItems = 0
         #print('Num of Items is: ', numItems)
         
         #get item type
         try:
             itemType = driver.find_element(By.CLASS_NAME, 'workshop_browsing_section').text
-        except:
-            print('NO ITEM TYPE FOUND ON THIS PAGE: ', tabLink)
+        except Exception as e:
+            sendToErrors(str(e), tabLink, 'itemType could not be found')
             itemType = 'N/A'
 
         # #get accepted items
