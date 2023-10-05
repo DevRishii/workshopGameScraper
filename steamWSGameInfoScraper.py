@@ -1,6 +1,7 @@
 import selenium
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 import time
 import pandas as pd
 
@@ -265,9 +266,15 @@ def sendToErrors(errorMessage,link,note):
     df.loc[len(df)] = [errorMessage,link,note]
     df.to_csv('errors.csv', index=False)
     
-
 # Create a new instance of the Chrome driver
-driver = webdriver.Chrome()
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+
+chromedriver_path = "chromedriver.exe"
+
+# Create a WebDriver instance
+driver = webdriver.Chrome(executable_path=chromedriver_path, options=chrome_options)
+
 df = pd.read_csv('workshopDB.csv')
 driver.get("https://steamcommunity.com/workshop/?browsesort=Alphabetical&browsefilter=Alphabetical&p=1")
 
