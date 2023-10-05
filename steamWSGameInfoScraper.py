@@ -203,7 +203,9 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
     try:
         panels = driver.find_element(By.CLASS_NAME, 'stats_table')
         panels = panels.find_elements(By.TAG_NAME, 'tr')
+        noUniqVis = 'N/A'
         noSubs = 'N/A'
+        noFavs = 'N/A'
         
         rows = [row.text for row in panels]
         for row in rows:
@@ -212,7 +214,7 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
             elif 'Current Subscribers' in row:
                 noSubs = row.split(' ')[0]
             elif 'Current Favorites' in row:
-                nofavs = row.split(' ')[0]
+                noFavs = row.split(' ')[0]
             else:
                 print('NEW ROW DATA: ', row)
     except:
@@ -222,12 +224,12 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
             stats = panel.text.split('\n')
             noUniqVis = stats[0]
             noSubs = stats[1]
-            nofavs = stats[2]
+            noFavs = stats[2]
         except Exception as e:
             sendToErrors(str(e), itemUrl, 'noUniqVis, noSubs, noFavs could not be found')
             noUniqVis = 'N/A'
             noSubs = 'N/A'
-            nofavs = 'N/A'
+            noFavs = 'N/A'
         
     try:
         #get ratings
@@ -252,11 +254,11 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
     #print('rating:', rating)
 
     print('Sending to DB')
-    sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,nofavs,noSubs,rating,df) 
+    sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,noFavs,noSubs,rating,df) 
 
-def sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,nofavs,noSubs,rating,df):
+def sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,noFavs,noSubs,rating,df):
     #adds row to db
-    df.loc[len(df)] = [gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,nofavs,noSubs,rating]
+    df.loc[len(df)] = [gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,noFavs,noSubs,rating]
     #print('after:',df)
     df.to_csv('workshopDB.csv', index=False)
     print('SUCCESSFULLY ADDED TO DB')
