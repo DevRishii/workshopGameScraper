@@ -33,7 +33,7 @@ def getGameUrls(driver):
                     driver.find_element(By.ID, "workshop_apps_btn_next").click()
                     time.sleep(0.3)
                     break  # Exit the loop if the actions were successful
-            except selenium.common.exceptions.StaleElementReferenceException:
+            except:
                 print("StaleElementReferenceException occurred. Refreshing elements and retrying.")
                 continue  # Retry locating the elements
 
