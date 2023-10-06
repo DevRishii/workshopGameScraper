@@ -216,7 +216,8 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
             elif 'Current Favorites' in row:
                 noFavs = row.split(' ')[0]
             else:
-                print('NEW ROW DATA: ', row)
+                # print('NEW ROW DATA: ', row)
+                sendToErrors('NEW ROW DATA: ' + row, itemUrl, 'Extra row data found while getting noUniqVis, noSubs, noFavs')
     except:
 
         try:
