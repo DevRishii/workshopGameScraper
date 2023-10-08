@@ -4,17 +4,20 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import time
 
-# driver = webdriver.Chrome()
 
 # Create a new instance of the Chrome driver
 chrome_options = Options()
 chrome_options.add_argument("--headless")
+chrome_options.add_argument("--window-size=1920,1080")
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument(
+    "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36")
 
-chromedriver_path = "chromedriver.exe"
 
 # Create a WebDriver instance
 driver = webdriver.Chrome(options=chrome_options)
 
+# driver = webdriver.Chrome()
 
 
 driver.get('https://steamcommunity.com/sharedfiles/filedetails/?id=2545853797')
@@ -26,6 +29,23 @@ driver.get('https://steamcommunity.com/sharedfiles/filedetails/?id=2545853797')
 noUniqVis = 'N/A'
 noSubs = 'N/A'
 nofavs = 'N/A'
+
+
+details = driver.find_elements(By.CLASS_NAME, 'detailsStatRight')
+
+#get item size
+itemSize = 'N/A'
+#print("itemSize:", itemSize)
+#get posted time
+# postedTime = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div[2]/div[4]/div/div[2]/div[1]').text
+postedTime = details[3].text
+#print("postedTime:", postedTime)
+#get updated time
+if len(details) == 5:
+    updatedTime = details[4].text
+else:
+    updatedTime = 'N/A'
+
 
 #Get number of unique visitors, favorites, subscriptions
 try:
@@ -50,14 +70,29 @@ try:
 except:
     print('Failed to obtain stats_table')
     try:
-        panel = driver.find_elements(By.CLASS_NAME, 'detailsStatsContainerLeft')
+        panel = driver.find_element(By.CLASS_NAME, 'detailsStatsContainerLeft')
         print('Obtained detailsStatsContainerLeft')
-        print('panel.text:', panel.text)
+        # stats = panel.find_elements(By.CLASS_NAME, 'detailsStatLeft')
+        # print('stats:', stats)
+  
         stats = panel.text.split('\n')
         print('stats:', stats)
-        noUniqVis = stats[0]
-        noSubs = stats[1]
-        noFavs = stats[2]
+        
+        for row in details:
+            print('row:', row.text)
+            if 'Unique Visitors' in row.text:
+                noUniqVis = stats[0]
+            elif 'Current Subscribers' in row.text:
+                noSubs = stats[1]
+            elif 'Current Favorites' in row.text:
+                noFavs = stats[2]
+                print('INSIDE CF:', noFavs ,stats[2])
+            elif 'Total Unique Favorites' in row.text:
+                pass
+            else:
+                print('NEW ROW DATA: ', row.text)
+                # sendToErrors('NEW ROW DATA: ' + row, itemUrl, 'Extra row data found while getting noUniqVis, noSubs, noFavs')
+        
     except Exception as e:
         # sendToErrors(str(e), itemUrl, 'noUniqVis, noSubs, noFavs could not be found')
         print('noUniqVis, noSubs, noFavs could not be found\n', str(e))
@@ -69,5 +104,10 @@ except:
 
 print('Unique Visitors:', noUniqVis)
 print('Current Subscribers:', noSubs)
-print('Current Favorites:', nofavs)
+print('Current Favorites:', noFavs)
+print('itemSize:', itemSize)
+print('postedTime:', postedTime)
+print('updatedTime:', updatedTime)
+
+
 

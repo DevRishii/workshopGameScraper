@@ -202,6 +202,7 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
     #Get number of unique visitors, favorites, subscriptions
     try:
         panels = driver.find_element(By.CLASS_NAME, 'stats_table')
+        print('Obtained stats_table')
         panels = panels.find_elements(By.TAG_NAME, 'tr')
         noUniqVis = 'N/A'
         noSubs = 'N/A'
@@ -216,18 +217,37 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
             elif 'Current Favorites' in row:
                 noFavs = row.split(' ')[0]
             else:
-                # print('NEW ROW DATA: ', row)
+                print('NEW ROW DATA: ', row)
                 sendToErrors('NEW ROW DATA: ' + row, itemUrl, 'Extra row data found while getting noUniqVis, noSubs, noFavs')
     except:
-
+        print('Failed to obtain stats_table')
         try:
             panel = driver.find_element(By.CLASS_NAME, 'detailsStatsContainerLeft')
+            print('Obtained detailsStatsContainerLeft')
+            # stats = panel.find_elements(By.CLASS_NAME, 'detailsStatLeft')
+            # print('stats:', stats)
+    
             stats = panel.text.split('\n')
-            noUniqVis = stats[0]
-            noSubs = stats[1]
-            noFavs = stats[2]
+            print('stats:', stats)
+            
+            for row in details:
+                print('row:', row.text)
+                if 'Unique Visitors' in row.text:
+                    noUniqVis = stats[0]
+                elif 'Current Subscribers' in row.text:
+                    noSubs = stats[1]
+                elif 'Current Favorites' in row.text:
+                    noFavs = stats[2]
+                    print('INSIDE CF:', noFavs ,stats[2])
+                elif 'Total Unique Favorites' in row.text:
+                    pass
+                else:
+                    print('NEW ROW DATA: ', row.text)
+                    sendToErrors('NEW ROW DATA: ' + row, itemUrl, 'Extra row data found while getting noUniqVis, noSubs, noFavs')
+            
         except Exception as e:
             sendToErrors(str(e), itemUrl, 'noUniqVis, noSubs, noFavs could not be found')
+            print('noUniqVis, noSubs, noFavs could not be found\n', str(e))
             noUniqVis = 'N/A'
             noSubs = 'N/A'
             noFavs = 'N/A'
@@ -273,8 +293,10 @@ def sendToErrors(errorMessage,link,note):
 # Create a new instance of the Chrome driver
 chrome_options = Options()
 chrome_options.add_argument("--headless")
-
-chromedriver_path = "chromedriver.exe"
+chrome_options.add_argument("--window-size=1920,1080")
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument(
+    "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36")
 
 # Create a WebDriver instance
 driver = webdriver.Chrome(options=chrome_options)
