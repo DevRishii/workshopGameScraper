@@ -202,7 +202,7 @@ driver = webdriver.Chrome(options=chrome_options)
 
 # driver = webdriver.Chrome()
 
-itemUrl = 'https://steamcommunity.com/sharedfiles/filedetails/?id=405455568'
+itemUrl = 'https://steamcommunity.com/sharedfiles/filedetails/?id=1679883045'
 itemType = 'Collections'
 gameName = 'test'
 df = pd.read_csv('example.csv')

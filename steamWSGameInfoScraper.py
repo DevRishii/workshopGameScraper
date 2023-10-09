@@ -226,7 +226,11 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
                 elif 'Current Subscribers' in row.text:
                     noSubs = stats[1]
                 elif 'Current Favorites' in row.text:
-                    noFavs = stats[2]
+                    if itemType == 'Collections':
+                        #Collections have noFavs in the 2nd index
+                        noFavs = stats[1]
+                    else:
+                        noFavs = stats[2]
                     # print('INSIDE CF:', noFavs ,stats[2])
                 elif 'Total Unique Favorites' in row.text:
                     pass
