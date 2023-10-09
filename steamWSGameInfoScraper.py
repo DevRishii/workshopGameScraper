@@ -100,15 +100,15 @@ def getItems(driver, tabUrl):
 # Collects item info and adds it to db
 def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
     driver.get(itemUrl)
-    #get game name
-    # gameName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
-    #print("gameName:", gameName)
+    
     #get game id
     gameId = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[2].get_attribute('href').split('appid=')[-1]
     #print("gameId:", gameId)
+    
     #get game link
     gameLink = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[1].get_attribute('href')
     #print("gameLink:", gameLink)
+    
     #get number of items
     noItems = numItems
     #print("noItems:", noItems)
@@ -116,10 +116,9 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
     #get item name
     itemName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
     #print("itemName:", itemName)
+    
     #get created by
     createdByList = driver.find_elements(By.CLASS_NAME, 'friendBlockContent')
-
-    # createdByList = [x.text.replace('Offline', '').replace('Online','').split('In-Game')[0].strip() for x in createdByList]
     createdBy = ''
     for name in createdByList:
         x = name.text
@@ -133,19 +132,16 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
         #get item size
         itemSize = 'N/A'
         #print("itemSize:", itemSize)
+        
         #get posted time
-        # postedTime = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div[2]/div[4]/div/div[2]/div[1]').text
         postedTime = details[3].text
         #print("postedTime:", postedTime)
+        
         #get updated time
         if len(details) == 5:
             updatedTime = details[4].text
         else:
             updatedTime = 'N/A'
-        # try:
-        #     updatedTime = driver.find_element(By.XPATH, '//*[@id="rightContents"]/div[2]/div[4]/div/div[2]/div[2]').text
-        # except:
-        #     updatedTime = 'N/A'
         #print("updatedTime:", updatedTime)
     else:
         #get item size, posted time, updated time
@@ -191,22 +187,16 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
         isRTU = 'Yes'
         isAccepted = 'No'
 
-    #print("isCurated:", isCurated)
-    #print("isRTU:", isRTU)
-    #print("isAccepted:", isAccepted)
-    
-
-    # print("noOfficialItems:", noOfficialItems)
-    
     
     #Get number of unique visitors, favorites, subscriptions
     try:
-        panels = driver.find_element(By.CLASS_NAME, 'stats_table')
-        print('Obtained stats_table')
-        panels = panels.find_elements(By.TAG_NAME, 'tr')
         noUniqVis = 'N/A'
         noSubs = 'N/A'
         noFavs = 'N/A'
+        
+        panels = driver.find_element(By.CLASS_NAME, 'stats_table')
+        print('Obtained stats_table')
+        panels = panels.find_elements(By.TAG_NAME, 'tr')
         
         rows = [row.text for row in panels]
         for row in rows:
@@ -228,22 +218,21 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
             # print('stats:', stats)
     
             stats = panel.text.split('\n')
-            print('stats:', stats)
+            # print('stats:', stats)
             
             for row in details:
-                print('row:', row.text)
                 if 'Unique Visitors' in row.text:
                     noUniqVis = stats[0]
                 elif 'Current Subscribers' in row.text:
                     noSubs = stats[1]
                 elif 'Current Favorites' in row.text:
                     noFavs = stats[2]
-                    print('INSIDE CF:', noFavs ,stats[2])
+                    # print('INSIDE CF:', noFavs ,stats[2])
                 elif 'Total Unique Favorites' in row.text:
                     pass
                 else:
                     print('NEW ROW DATA: ', row.text)
-                    sendToErrors('NEW ROW DATA: ' + row, itemUrl, 'Extra row data found while getting noUniqVis, noSubs, noFavs')
+                    # sendToErrors('NEW ROW DATA: ' + row.text, itemUrl, 'Extra row data found while getting noUniqVis, noSubs, noFavs')
             
         except Exception as e:
             sendToErrors(str(e), itemUrl, 'noUniqVis, noSubs, noFavs could not be found')
@@ -268,14 +257,13 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
         else:
             rating = 'N/A'
     except Exception as e:
-        sendToErrors(str(e), itemUrl, 'rating could not be found')
+        # sendToErrors(str(e), itemUrl, 'rating could not be found')
         rating = 'N/A'
         ratingLink = 'N/A'
-    #print("ratinglink:", ratingLink)
-    #print('rating:', rating)
+
 
     print('Sending to DB')
-    sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,noFavs,noSubs,rating,df) 
+    sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,noFavs,noSubs,rating,df)
 
 def sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,noFavs,noSubs,rating,df):
     #adds row to db

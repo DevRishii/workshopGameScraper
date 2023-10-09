@@ -1,1 +1,1 @@
-"Game Name","Game ID","Steam Workshop link","No. items","No. of Curated Item","No. of RTU Item","item","created by","item size","posted time","updated time","item description","Is it a Curated Item?","Is it a RTU Item?","No of unique vistors","No. of current favorites","No. of current subscribers","Review (How many stars out of 5 stars)"
+'gameName','gameId','gameLink','itemType','noItems','itemName','createdBy','itemSize','postedTime','updatedTime','itemDesc','isCurated','isRTU','isAccepted','noUniqVis','noFavs','noSubs','rating'
