@@ -101,64 +101,97 @@ def getItems(driver, tabUrl):
 def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
     driver.get(itemUrl)
     
-    #get game id
-    gameId = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[2].get_attribute('href').split('appid=')[-1]
-    #print("gameId:", gameId)
+    while True:
+        try:
+            #get game id
+            gameId = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[2].get_attribute('href').split('appid=')[-1]
+            break
+        except:
+            pass
+        #print("gameId:", gameId)
     
-    #get game link
-    gameLink = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[1].get_attribute('href')
-    #print("gameLink:", gameLink)
+    while True:
+        try:
+            #get game link
+            gameLink = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[1].get_attribute('href')
+            break
+        except:
+            pass
+        #print("gameLink:", gameLink)
+  
     
     #get number of items
     noItems = numItems
     #print("noItems:", noItems)
     
-    #get item name
-    itemName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
-    #print("itemName:", itemName)
+    while True:
+        try:
+            #get item name
+            itemName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
+            break
+        except:
+            pass
+        #print("itemName:", itemName)
     
-    #get created by
-    createdByList = driver.find_elements(By.CLASS_NAME, 'friendBlockContent')
-    createdBy = ''
-    for name in createdByList:
-        x = name.text
-        x = x.replace('Offline', '').replace('Online','').split('In-Game')[0].strip()
-        createdBy += x + ',\n'
-    createdBy = createdBy.strip(',\n')
-    #print("createdBy:", createdBy)
+    while True:
+        try:
+            #get created by
+            createdByList = driver.find_elements(By.CLASS_NAME, 'friendBlockContent')
+            createdBy = ''
+            for name in createdByList:
+                x = name.text
+                x = x.replace('Offline', '').replace('Online','').split('In-Game')[0].strip()
+                createdBy += x + ',\n'
+            createdBy = createdBy.strip(',\n')
+            break
+        except:
+            pass
+        #print("createdBy:", createdBy)
 
     if itemType == 'Collections':
-        details = driver.find_elements(By.CLASS_NAME, 'detailsStatRight')
-        #get item size
-        itemSize = 'N/A'
-        #print("itemSize:", itemSize)
-        
-        #get posted time
-        postedTime = details[3].text
-        #print("postedTime:", postedTime)
-        
-        #get updated time
-        if len(details) == 5:
-            updatedTime = details[4].text
-        else:
+        try:
+            details = driver.find_elements(By.CLASS_NAME, 'detailsStatRight')
+            #get item size
+            itemSize = 'N/A'
+            #print("itemSize:", itemSize)
+            
+            #get posted time
+            postedTime = details[3].text
+            #print("postedTime:", postedTime)
+            
+            #get updated time
+            if len(details) == 5:
+                updatedTime = details[4].text
+            else:
+                updatedTime = 'N/A'
+            #print("updatedTime:", updatedTime)
+        except Exception as e:
+            sendToErrors(str(e), itemUrl, 'itemSize, postedTime, updatedTime could not be found')
+            itemSize = 'N/A'
+            postedTime = 'N/A'
             updatedTime = 'N/A'
-        #print("updatedTime:", updatedTime)
     else:
-        #get item size, posted time, updated time
-        details = driver.find_elements(By.CLASS_NAME, 'detailsStatRight')
+        try:
+            #get item size, posted time, updated time
+            details = driver.find_elements(By.CLASS_NAME, 'detailsStatRight')
 
-        #get item size
-        itemSize = details[0].text
-        #print("itemSize:", itemSize)
-        #get posted time
-        postedTime = details[1].text
-        #print("postedTime:", postedTime)
-        #get updated time
-        if len(details) == 3:
-            updatedTime = details[2].text
-        else:
+            #get item size
+            itemSize = details[0].text
+            #print("itemSize:", itemSize)
+            #get posted time
+            postedTime = details[1].text
+            #print("postedTime:", postedTime)
+            #get updated time
+            if len(details) == 3:
+                updatedTime = details[2].text
+            else:
+                updatedTime = 'N/A'
+            #print("updatedTime:", updatedTime)
+        except Exception as e:
+            sendToErrors(str(e), itemUrl, 'itemSize, postedTime, updatedTime could not be found')
+            itemSize = 'N/A'
+            postedTime = 'N/A'
             updatedTime = 'N/A'
-        #print("updatedTime:", updatedTime)
 
     try:
         #get item description
@@ -335,14 +368,6 @@ for game in gameUrls:
             sendToErrors(str(e), tabLink, 'itemType could not be found')
             itemType = 'N/A'
 
-        # #get accepted items
-        # try:
-        #     if 'mtxitems' in tabLink:
-        #         # driver.get(tabLink.split('&')[0] + '&browsesort=accepted&section=mtxitems&p=1&browsefilter=accepted')
-        #         # noOfficialItems = driver.find_element(By.CLASS_NAME, 'workshopBrowsePagingInfo').text.split(' ')[-2]
-        #         gameItems.extend(getItems(driver, tabLink.split('&')[0] + '&browsesort=accepted&section=mtxitems&p=1&browsefilter=accepted'))
-        # except:
-        #     pass
         print('Getting Items from game:', gameName, 'and tab:', itemType)
         gameItems = getItems(driver, tabLink)
         print('Items obtained, total of:', len(gameItems))
