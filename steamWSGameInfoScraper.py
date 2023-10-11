@@ -11,7 +11,7 @@ def getGameUrls(driver):
     
     # Get the total number of pages
     totalNumPages = int(driver.find_elements(By.CLASS_NAME, "workshop_apps_paging_pagelink")[-1].text)
-    print("Total Number of Pages:", totalNumPages)
+    #print("Total Number of Pages:", totalNumPages)
 
     for i in range(totalNumPages):
         while True:
@@ -52,7 +52,7 @@ def getItems(driver, tabUrl):
     except selenium.common.exceptions.NoSuchElementException:
         urlList = driver.find_elements(By.CLASS_NAME, "ugc")
         if len(urlList) == 0:
-            print('No items found')
+            #print('No items found')
             return items
         hold = list()
         for item in urlList:
@@ -64,7 +64,7 @@ def getItems(driver, tabUrl):
     except IndexError:
         urlList = driver.find_elements(By.CLASS_NAME, "ugc")
         if len(urlList) == 0:
-            print('No items found')
+            #print('No items found')
             return items
         hold = list()
         for item in urlList:
@@ -78,7 +78,7 @@ def getItems(driver, tabUrl):
             try:
                 urlList = driver.find_elements(By.CLASS_NAME, "ugc")
                 if len(urlList) == 0:
-                    print('No items found')
+                    #print('No items found')
                     return items
                 hold = list()
                 for item in urlList:
@@ -214,7 +214,11 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
             isRTU = 'No'
             isAccepted = 'Yes'
         else:
-            print('Not accepted or curated, this is the text:', gltext)
+            sendToErrors(gltext, itemUrl, 'Not accepted or curated, this is the text:')
+            isCurated = 'N/A'
+            isRTU = 'N/A'
+            isAccepted = 'N/A'
+            #print('Not accepted or curated, this is the text:', gltext)
     except:
         isCurated = 'No'
         isRTU = 'Yes'
@@ -228,7 +232,7 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
         noFavs = 'N/A'
         
         panels = driver.find_element(By.CLASS_NAME, 'stats_table')
-        print('Obtained stats_table')
+        #print('Obtained stats_table')
         panels = panels.find_elements(By.TAG_NAME, 'tr')
         
         rows = [row.text for row in panels]
@@ -240,13 +244,13 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
             elif 'Current Favorites' in row:
                 noFavs = row.split(' ')[0]
             else:
-                print('NEW ROW DATA: ', row)
+                #print('NEW ROW DATA: ', row)
                 sendToErrors('NEW ROW DATA: ' + row, itemUrl, 'Extra row data found while getting noUniqVis, noSubs, noFavs')
     except:
-        print('Failed to obtain stats_table')
+        #print('Failed to obtain stats_table')
         try:
             panel = driver.find_element(By.CLASS_NAME, 'detailsStatsContainerLeft')
-            print('Obtained detailsStatsContainerLeft')
+            #print('Obtained detailsStatsContainerLeft')
             # stats = panel.find_elements(By.CLASS_NAME, 'detailsStatLeft')
             # print('stats:', stats)
     
@@ -268,12 +272,13 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
                 elif 'Total Unique Favorites' in row.text:
                     pass
                 else:
-                    print('NEW ROW DATA: ', row.text)
+                    #print('NEW ROW DATA: ', row.text)
                     # sendToErrors('NEW ROW DATA: ' + row.text, itemUrl, 'Extra row data found while getting noUniqVis, noSubs, noFavs')
+                    pass
             
         except Exception as e:
             sendToErrors(str(e), itemUrl, 'noUniqVis, noSubs, noFavs could not be found')
-            print('noUniqVis, noSubs, noFavs could not be found\n', str(e))
+            #print('noUniqVis, noSubs, noFavs could not be found\n', str(e))
             noUniqVis = 'N/A'
             noSubs = 'N/A'
             noFavs = 'N/A'
@@ -299,7 +304,7 @@ def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
         ratingLink = 'N/A'
 
 
-    print('Sending to DB')
+    #print('Sending to DB')
     sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,noFavs,noSubs,rating,df)
 
 def sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,noFavs,noSubs,rating,df):
@@ -307,7 +312,7 @@ def sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSi
     df.loc[len(df)] = [gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,noFavs,noSubs,rating]
     #print('after:',df)
     df.to_csv('workshopDB.csv', index=False)
-    print('SUCCESSFULLY ADDED TO DB')
+    #print('SUCCESSFULLY ADDED TO DB')
 
 def sendToErrors(errorMessage,link,note):
     df = pd.read_csv('errors.csv')
@@ -370,10 +375,10 @@ for game in gameUrls:
 
         print('Getting Items from game:', gameName, 'and tab:', itemType)
         gameItems = getItems(driver, tabLink)
-        print('Items obtained, total of:', len(gameItems))
+        #print('Items obtained, total of:', len(gameItems))
 
         if len(gameItems) != 0:
-            print('Getting Item Info')
+            #print('Getting Item Info')
             for item in gameItems:
                 getItemInfo(driver, item, df, numItems, gameName, itemType)
     
