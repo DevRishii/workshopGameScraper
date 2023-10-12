@@ -98,55 +98,53 @@ def getItems(driver, tabUrl):
     return items
 
 # Collects item info and adds it to db
-def getItemInfo(driver, itemUrl, df, numItems, gameName, itemType):
+def getItemInfo(driver, itemUrl, df, noItems, gameName, itemType, gameLink, gameId):
     driver.get(itemUrl)
     
-    while True:
-        try:
-            #get game id
-            gameId = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[2].get_attribute('href').split('appid=')[-1]
-            break
-        except:
-            pass
-        #print("gameId:", gameId)
+    # while True:
+    #     try:
+    #         #get game id
+    #         gameId = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[2].get_attribute('href').split('appid=')[-1]
+    #         break
+    #     except:
+    #         pass
+    #     #print("gameId:", gameId)
     
-    while True:
-        try:
-            #get game link
-            gameLink = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[1].get_attribute('href')
-            break
-        except:
-            pass
-        #print("gameLink:", gameLink)
+    # try:
+    #     #get game link
+    #     gameLink = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[1].get_attribute('href')
+    # except:
+    #     pass
+    #     #print("gameLink:", gameLink)
   
     
-    #get number of items
-    noItems = numItems
-    #print("noItems:", noItems)
+    # #get number of items
+    # noItems = numItems
+    # #print("noItems:", noItems)
     
-    while True:
-        try:
-            #get item name
-            itemName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
-            break
-        except:
-            pass
-        #print("itemName:", itemName)
+
+    try:
+        #get item name
+        itemName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
+    except:
+        sendToErrors(str(e), itemUrl, 'itemName could not be found')
+        itemName = 'N/A'
+    #print("itemName:", itemName)
     
-    while True:
-        try:
-            #get created by
-            createdByList = driver.find_elements(By.CLASS_NAME, 'friendBlockContent')
-            createdBy = ''
-            for name in createdByList:
-                x = name.text
-                x = x.replace('Offline', '').replace('Online','').split('In-Game')[0].strip()
-                createdBy += x + ',\n'
-            createdBy = createdBy.strip(',\n')
-            break
-        except:
-            pass
-        #print("createdBy:", createdBy)
+
+    try:
+        #get created by
+        createdByList = driver.find_elements(By.CLASS_NAME, 'friendBlockContent')
+        createdBy = ''
+        for name in createdByList:
+            x = name.text
+            x = x.replace('Offline', '').replace('Online','').split('In-Game')[0].strip()
+            createdBy += x + ',\n'
+        createdBy = createdBy.strip(',\n')
+    except:
+        sendToErrors(str(e), itemUrl, 'createdBy could not be found')
+        createdBy = 'N/A'
+    #print("createdBy:", createdBy)
 
     if itemType == 'Collections':
         try:
@@ -380,7 +378,7 @@ for game in gameUrls:
         if len(gameItems) != 0:
             #print('Getting Item Info')
             for item in gameItems:
-                getItemInfo(driver, item, df, numItems, gameName, itemType)
+                getItemInfo(driver, item, df, numItems, gameName, itemType, game, appId)
     
 
 # Quit the driver
