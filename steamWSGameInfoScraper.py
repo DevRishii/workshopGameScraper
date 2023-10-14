@@ -126,7 +126,7 @@ def getItemInfo(driver, itemUrl, df, noItems, gameName, itemType, gameLink, game
     try:
         #get item name
         itemName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
-    except:
+    except Exception as e:
         sendToErrors(str(e), itemUrl, 'itemName could not be found')
         itemName = 'N/A'
     #print("itemName:", itemName)
@@ -141,7 +141,7 @@ def getItemInfo(driver, itemUrl, df, noItems, gameName, itemType, gameLink, game
             x = x.replace('Offline', '').replace('Online','').split('In-Game')[0].strip()
             createdBy += x + ',\n'
         createdBy = createdBy.strip(',\n')
-    except:
+    except Exception as e:
         sendToErrors(str(e), itemUrl, 'createdBy could not be found')
         createdBy = 'N/A'
     #print("createdBy:", createdBy)
