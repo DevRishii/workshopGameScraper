@@ -330,7 +330,7 @@ chrome_options.add_argument(
 driver = webdriver.Chrome(options=chrome_options)
 
 
-df = pd.read_csv('workshopDB.csv')
+# df = pd.read_csv('workshopDB.csv')
 driver.get("https://steamcommunity.com/workshop/?browsesort=Alphabetical&browsefilter=Alphabetical&p=1")
 
 #gets the total number of games
@@ -338,12 +338,23 @@ totalNumGames = driver.find_element(By.XPATH, "//*[@id=\"workshop_apps_total\"]"
 #gets rid of the ',' in the number
 totalNumGames = int(totalNumGames[0:1] + totalNumGames[2:])
 
+#CHANGE THIS TO A CHUNK NUMBER FROM 1-11
+CHUNK_NUM = 1
+
+filename = 'chunkGameURls' + str(CHUNK_NUM) + '.txt'
+csvFile = 'workshopDBChunk' + str(CHUNK_NUM) + '.csv'
+df = pd.read_csv(csvFile)
+
 print('Getting Game URLs')
-gameUrls = getGameUrls(driver)
+gameUrls = list()
+
+with open(filename, 'r') as f:
+    lines = f.readlines()
+    for line in lines:
+        gameUrls.append(line.strip('\n'))
 print('Game URLs obtained, total of:', len(gameUrls))
-# gameUrls = ['https://steamcommunity.com/app/1905530/workshop/','https://steamcommunity.com/app/866510/workshop/','https://steamcommunity.com/app/1996600/workshop/','https://steamcommunity.com/app/614910/workshop/']
-# gameUrls = ['https://steamcommunity.com/app/614910/workshop/']
-# gameUrls = ['https://steamcommunity.com/app/866510/workshop/']
+
+# gameUrls = getGameUrls(driver)
 
 for game in gameUrls:
     driver.get(game)

@@ -246,10 +246,34 @@ df = pd.read_csv('example.csv')
 
 driver.get("https://steamcommunity.com/workshop/?browsesort=Alphabetical&browsefilter=Alphabetical&p=1")
 
-gameUrls = getGameUrls(driver)
+# gameUrls = getGameUrls(driver)
 
-#Split gameURLs into 
+# gameUrls = list()
+# with open('allGameUrls.txt', 'r') as f:
+#     # f.write('\n'.join(gameUrls))
+#     lines = f.readlines()
+#     for line in lines:
+#         gameUrls.append(line.strip('\n'))
 
+# print('Number of gameUrls:', len(gameUrls))
+# print('gameUrl:', gameUrls)
+
+# #Split gameURLs into 10 chunks and store them in a txt file
+# size = len(gameUrls)
+# chunks = size // 10
+# chunks = [gameUrls[i * chunks:(i + 1) * chunks] for i in range((size + chunks - 1) // chunks )]
+
+# for i,chunk in enumerate(chunks):
+#     print('Chunk:', i+1)
+#     fileName = 'chunkGameUrls' + str(i+1) + '.txt'
+#     with open(fileName, 'w') as f:
+#             f.write('\n'.join(chunk))   
+
+txt = "'gameName','gameId','gameLink','itemType','noItems','itemName','createdBy','itemSize','postedTime','updatedTime','itemDesc','isCurated','isRTU','isAccepted','noUniqVis','noFavs','noSubs','rating'"
+for i in range(11):
+    filename = 'workshopDBChunk' + str(i+1) + '.csv'
+    with open(filename, 'w') as f:
+        f.write(txt)
 
 # driver.get(itemUrl)
 
