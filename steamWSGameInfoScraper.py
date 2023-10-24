@@ -102,28 +102,6 @@ def getItems(driver, tabUrl):
 def getItemInfo(driver, itemUrl, df, noItems, gameName, itemType, gameLink, gameId, csvFile):
     driver.get(itemUrl)
     
-    # while True:
-    #     try:
-    #         #get game id
-    #         gameId = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[2].get_attribute('href').split('appid=')[-1]
-    #         break
-    #     except:
-    #         pass
-    #     #print("gameId:", gameId)
-    
-    # try:
-    #     #get game link
-    #     gameLink = driver.find_element(By.CLASS_NAME, 'breadcrumbs').find_elements(By.TAG_NAME, 'a')[1].get_attribute('href')
-    # except:
-    #     pass
-    #     #print("gameLink:", gameLink)
-  
-    
-    # #get number of items
-    # noItems = numItems
-    # #print("noItems:", noItems)
-    
-
     try:
         #get item name
         itemName = driver.find_element(By.CLASS_NAME, 'workshopItemTitle').text
@@ -314,10 +292,11 @@ def sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSi
     #print('SUCCESSFULLY ADDED TO DB')
 
 def sendToErrors(errorMessage,link,note):
-    df = pd.read_csv('errors.csv')
+    fName = 'errors' + str(sys.argv[1]) + '.txt'
+    df = pd.read_csv(fName)
     #adds row to db
     df.loc[len(df)] = [errorMessage,link,note]
-    df.to_csv('errors.csv', index=False)
+    df.to_csv(fName, index=False)
 
 
 
