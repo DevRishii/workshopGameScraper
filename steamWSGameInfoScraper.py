@@ -11,10 +11,7 @@ def getGameUrls(driver):
     urls = list()
     
     # Get the total number of pages
-    try:
-        totalNumPages = int(driver.find_elements(By.CLASS_NAME, "workshop_apps_paging_pagelink")[-1].text)
-    except:
-        totalNumPages = int(driver.find_elements(By.CLASS_NAME, "workshop_apps_paging_pagelink")[-1].text.replace(',','_'))
+    totalNumPages = int(driver.find_elements(By.CLASS_NAME, "workshop_apps_paging_pagelink")[-1].text.replace(',',''))
     #print("Total Number of Pages:", totalNumPages)
 
     for i in range(totalNumPages):
@@ -50,7 +47,7 @@ def getItems(driver, tabUrl):
     driver.get(tabUrl + '1')
     # Get the total number of pages
     try:
-        totalNumPages = int(driver.find_elements(By.CLASS_NAME, 'pagelink')[-1].text)
+        totalNumPages = int(driver.find_elements(By.CLASS_NAME, 'pagelink')[-1].text.replace(',',''))
         #print(totalNumPages)
     #If there is only one page
     except selenium.common.exceptions.NoSuchElementException:
