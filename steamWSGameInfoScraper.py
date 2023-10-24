@@ -99,7 +99,7 @@ def getItems(driver, tabUrl):
     return items
 
 # Collects item info and adds it to db
-def getItemInfo(driver, itemUrl, df, noItems, gameName, itemType, gameLink, gameId):
+def getItemInfo(driver, itemUrl, df, noItems, gameName, itemType, gameLink, gameId, csvFile):
     driver.get(itemUrl)
     
     # while True:
@@ -304,13 +304,13 @@ def getItemInfo(driver, itemUrl, df, noItems, gameName, itemType, gameLink, game
 
 
     #print('Sending to DB')
-    sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,noFavs,noSubs,rating,df)
+    sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,noFavs,noSubs,rating,df,csvFile)
 
-def sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,noFavs,noSubs,rating,df):
+def sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,noFavs,noSubs,rating,df,csvFile):
     #adds row to db
     df.loc[len(df)] = [gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,noFavs,noSubs,rating]
     #print('after:',df)
-    df.to_csv('workshopDB.csv', index=False)
+    df.to_csv(csvFile, index=False)
     #print('SUCCESSFULLY ADDED TO DB')
 
 def sendToErrors(errorMessage,link,note):
@@ -393,7 +393,7 @@ for game in gameUrls:
         if len(gameItems) != 0:
             #print('Getting Item Info')
             for item in gameItems:
-                getItemInfo(driver, item, df, numItems, gameName, itemType, game, appId)
+                getItemInfo(driver, item, df, numItems, gameName, itemType, game, appId, csvFile)
     
 
 # Quit the driver
