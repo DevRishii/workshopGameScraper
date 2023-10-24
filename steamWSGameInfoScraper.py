@@ -341,7 +341,7 @@ totalNumGames = int(totalNumGames[0:1] + totalNumGames[2:])
 #CHANGE THIS TO A CHUNK NUMBER FROM 1-11
 CHUNK_NUM = 1
 
-filename = 'chunkGameURls' + str(CHUNK_NUM) + '.txt'
+filename = 'chunkGameUrls' + str(CHUNK_NUM) + '.txt'
 csvFile = 'workshopDBChunk' + str(CHUNK_NUM) + '.csv'
 df = pd.read_csv(csvFile)
 
