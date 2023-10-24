@@ -1,3 +1,4 @@
+import sys
 import selenium
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -317,7 +318,10 @@ def sendToErrors(errorMessage,link,note):
     #adds row to db
     df.loc[len(df)] = [errorMessage,link,note]
     df.to_csv('errors.csv', index=False)
-    
+
+
+
+
 # Create a new instance of the Chrome driver
 chrome_options = Options()
 chrome_options.add_argument("--headless")
@@ -338,8 +342,8 @@ totalNumGames = driver.find_element(By.XPATH, "//*[@id=\"workshop_apps_total\"]"
 #gets rid of the ',' in the number
 totalNumGames = int(totalNumGames[0:1] + totalNumGames[2:])
 
-#CHANGE THIS TO A CHUNK NUMBER FROM 1-11
-CHUNK_NUM = 1
+#chunk number given from command line argument in position 2
+CHUNK_NUM = int(sys.argv[1])
 
 filename = 'chunkGameUrls' + str(CHUNK_NUM) + '.txt'
 csvFile = 'workshopDBChunk' + str(CHUNK_NUM) + '.csv'
