@@ -11,7 +11,10 @@ def getGameUrls(driver):
     urls = list()
     
     # Get the total number of pages
-    totalNumPages = int(driver.find_elements(By.CLASS_NAME, "workshop_apps_paging_pagelink")[-1].text)
+    try:
+        totalNumPages = int(driver.find_elements(By.CLASS_NAME, "workshop_apps_paging_pagelink")[-1].text)
+    except:
+        totalNumPages = int(driver.find_elements(By.CLASS_NAME, "workshop_apps_paging_pagelink")[-1].text.replace(',','_'))
     #print("Total Number of Pages:", totalNumPages)
 
     for i in range(totalNumPages):
