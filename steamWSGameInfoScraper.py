@@ -341,7 +341,6 @@ print('Game URLs obtained, total of:', len(gameUrls))
 
 for game in gameUrls:
     driver.get(game)
-    browseTab = driver.find_element(By.XPATH, '//*[@id="responsive_page_template_content"]/div[1]/div[1]/div[3]/div/div[2]/div[2]/a')
     # Gets a list of all the links in the browse tab and grabs the ones that are links
     # browseList = [x + '&p=' for i, x in enumerate(browseTab.get_attribute('data-dropdown-html').split('\"')) if i % 2 == 1]
     # print(browseList)
