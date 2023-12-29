@@ -2,7 +2,9 @@ import selenium
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 import time
+import os
 import pandas as pd
 
 #Gets the game urls from steam workshop
@@ -37,6 +39,104 @@ def getGameUrls(driver):
                 continue  # Retry locating the elements
 
     return urls
+
+# Returns a list of items from the game's page
+def getItems(driver, tabUrl):
+    items = list()
+    #Navigate to the tab
+    driver.get(tabUrl + '1')
+    # Get the total number of pages
+    try:
+        totalNumPages = int(driver.find_elements(By.CLASS_NAME, 'pagelink')[-1].text.replace(',',''))
+        #print(totalNumPages)
+    #If there is only one page
+    except selenium.common.exceptions.NoSuchElementException:
+        urlList = driver.find_elements(By.CLASS_NAME, "ugc")
+        if len(urlList) == 0:
+            #print('No items found')
+            return items
+        hold = list()
+        for item in urlList:
+            hold.append(item.get_attribute("href"))
+        # time.sleep(0.3)
+        items.extend(hold)
+        return items
+    #If there are no items
+    except IndexError:
+        urlList = driver.find_elements(By.CLASS_NAME, "ugc")
+        if len(urlList) == 0:
+            #print('No items found')
+            return items
+        hold = list()
+        for item in urlList:
+            hold.append(item.get_attribute("href"))
+        # time.sleep(0.3)
+        items.extend(hold)
+        return items
+    #loop through all pages
+    for i in range(1, totalNumPages + 1):
+        while True:
+            try:
+                urlList = driver.find_elements(By.CLASS_NAME, "ugc")
+                if len(urlList) == 0:
+                    #print('No items found')
+                    return items
+                hold = list()
+                for item in urlList:
+                    hold.append(item.get_attribute("href"))
+                #print(len(hold))
+
+                # time.sleep(0.3)
+                items.extend(hold)
+                #print(len(items))
+                #print('going to page:',i + 1)
+                driver.get(tabUrl + str(i + 1))
+                break
+            except selenium.common.exceptions.StaleElementReferenceException:
+                print("StaleElementReferenceException occurred. Refreshing elements and retrying.")
+                continue  # Retry locating the elements
+
+    return items
+
+
+# Returns a list of items from the game's page
+def get_items(driver, tab_url):
+    items = []
+    
+    # Navigate to the first page
+    driver.get(tab_url + '1')
+
+    try:
+        # Get the total number of pages
+        total_num_pages = int(driver.find_elements(By.CLASS_NAME, 'pagelink')[-1].text.replace(',', ''))
+    except (NoSuchElementException, IndexError):
+        # If there is only one page or an error occurs, retrieve items from the current page and return
+        items.extend(get_items_from_page(driver))
+        return items
+
+    # Loop through all pages
+    for i in range(1, total_num_pages + 1):
+        while True:
+            try:
+                items.extend(get_items_from_page(driver))
+                driver.get(tab_url + str(i + 1))
+                break
+            except StaleElementReferenceException:
+                print("StaleElementReferenceException occurred. Refreshing elements and retrying.")
+                continue  # Retry locating the elements
+
+    return items
+
+
+def get_items_from_page(driver):
+    try:
+        url_list = driver.find_elements(By.CLASS_NAME, "ugc")
+        items = [item.get_attribute("href") for item in url_list]
+        # Add a delay if needed: time.sleep(0.3)
+        return items
+    except NoSuchElementException:
+        # If no items are found on the current page, return an empty list
+        return []
 
 
 # Collects item info and adds it to db
@@ -227,7 +327,7 @@ def sendToErrors(errorMessage,link,note):
 
 # Create a new instance of the Chrome driver
 chrome_options = Options()
-chrome_options.add_argument("--headless")
+# chrome_options.add_argument("--headless")
 chrome_options.add_argument("--window-size=1920,1080")
 chrome_options.add_argument("--disable-gpu")
 chrome_options.add_argument(
@@ -239,10 +339,11 @@ driver = webdriver.Chrome(options=chrome_options)
 
 # driver = webdriver.Chrome()
 
-itemUrl = 'https://steamcommunity.com/sharedfiles/filedetails/?id=1679883045'
-itemType = 'Collections'
+itemUrl = 'https://steamcommunity.com/sharedfiles/filedetails/?id=3112299306&searchtext='
+itemType = 'Items'
 gameName = 'test'
 df = pd.read_csv('example.csv')
+
 
 driver.get("https://steamcommunity.com/workshop/?browsesort=Alphabetical&browsefilter=Alphabetical&p=1")
 
@@ -269,13 +370,60 @@ driver.get("https://steamcommunity.com/workshop/?browsesort=Alphabetical&browsef
 #     with open(fileName, 'w') as f:
 #             f.write('\n'.join(chunk))   
 
-txt = "'gameName','gameId','gameLink','itemType','noItems','itemName','createdBy','itemSize','postedTime','updatedTime','itemDesc','isCurated','isRTU','isAccepted','noUniqVis','noFavs','noSubs','rating'"
-for i in range(11):
-    filename = 'workshopDBChunk' + str(i+1) + '.csv'
-    with open(filename, 'w') as f:
-        f.write(txt)
+# txt = "'gameName','gameId','gameLink','itemType','noItems','itemName','createdBy','itemSize','postedTime','updatedTime','itemDesc','isCurated','isRTU','isAccepted','noUniqVis','noFavs','noSubs','rating'"
+# for i in range(11):
+#     filename = 'workshopDBChunk' + str(i+1) + '.csv'
+#     with open(filename, 'w') as f:
+#         f.write(txt)
 
 # driver.get(itemUrl)
 
-# getItemInfo(driver, itemUrl, df, 1, gameName, itemType)
+getItemInfo(driver, itemUrl, df, 1, gameName, itemType)
 
+# csvFile = 'itemUrls.csv'
+
+# gameUrls = ['https://steamcommunity.com/app/107410/workshop/', 'https://steamcommunity.com/app/236850/workshop/', 'https://steamcommunity.com/app/570/workshop/']
+
+# #1 is Arma
+# #2 is Europa
+# #3 is Dota
+# gameCount = 0
+
+# for game in gameUrls:
+#     gameCount += 1
+#     driver.get(game)
+
+#     appId = game.split('/')[-3]
+#     browseList = ['https://steamcommunity.com/workshop/browse/?appid='+ appId +'&browsesort=trend&section=readytouseitems&actualsort=mostrecent&p=', 'https://steamcommunity.com/workshop/browse/?appid='+ appId +'&browsesort=trend&section=collections&p=', 'https://steamcommunity.com/workshop/browse/?appid='+ appId +'&browsesort=trend&section=mtxitems&p=', 'https://steamcommunity.com/workshop/browse/?appid='+ appId +'&browsesort=accepted&section=mtxitems&p=1&browsefilter=accepted&p=']
+#     gameName = driver.find_element(By.CLASS_NAME, 'apphub_AppName').text
+#     for tabLink in browseList:
+#         driver.get(tabLink)
+#         #print(tabLink)
+#         try:
+#             numItems = driver.find_element(By.CLASS_NAME, 'workshopBrowsePagingInfo').text.split(' ')[-2]
+#         except Exception as e:
+#             sendToErrors(str(e), tabLink, 'numItems could not be found')
+#             numItems = 0
+#         #print('Num of Items is: ', numItems)
+        
+#         #get item type
+#         try:
+#             itemType = driver.find_element(By.CLASS_NAME, 'workshop_browsing_section').text
+#         except Exception as e:
+#             sendToErrors(str(e), tabLink, 'itemType could not be found')
+#             itemType = 'N/A'
+
+#         print('Getting Items from game:', gameName, 'and tab:', itemType)
+#         # gameItems = get_items(driver, tabLink)
+        
+#         fname = 'itemUrls' + 'Game' + str(gameCount) + 'Tab' + str(browseList.index(tabLink)) + '.txt'
+#         # Check if the file exists before opening it
+#         if os.path.isfile(fname):
+#             # Read the file and store URLs in a list
+#             with open(fname, 'r') as file:
+#                 gameItems = [line.strip() for line in file]
+            
+#             if len(gameItems) != 0:
+#                 for item in gameItems:
+#                     getItemInfo(driver, item, df, numItems, gameName, itemType, game, appId, csvFile)
+                
