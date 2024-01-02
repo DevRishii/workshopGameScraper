@@ -217,7 +217,7 @@ def sendToDB(gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSi
     db_df.loc[len(db_df)] = [gameName,gameId,gameLink,itemType,noItems,itemName,createdBy,itemSize,postedTime,updatedTime,itemDesc,isCurated,isRTU,isAccepted,noUniqVis,noFavs,noSubs,rating]
     #print('after:',df)
     db_df.to_csv(csvFile, index=False)
-    print('SUCCESSFULLY ADDED TO DB')
+    # print('SUCCESSFULLY ADDED TO DB')
 
 def sendToErrors(errorMessage,link,note):
     #adds row to error dataframe
@@ -312,7 +312,13 @@ nextFile, fileNum = True, 0
 while (nextFile):
     fileNum += 1
     gameItems, nextFile = getItemFromFile(fName, fileNum)
+    itemCount = 0
     if len(gameItems) != 0:
         for item in gameItems:
+            itemCount += 1
             getItemInfo(driver, item, numItems, gameName, itemType, game, appId)
+            
+            #Prints out progress every 100 items
+            if itemCount % 100 == 0:
+                print('Item:', itemCount, 'out of', numItems)
             
