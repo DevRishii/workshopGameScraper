@@ -6,6 +6,7 @@ from selenium.common.exceptions import NoSuchElementException, StaleElementRefer
 import time
 import os
 import pandas as pd
+import sys
 
 
 # Collects item info and adds it to db
@@ -235,8 +236,11 @@ chrome_options.add_argument(
 # Create a WebDriver instance
 driver = webdriver.Chrome(options=chrome_options)
 
-gameNum = int(input('1-Arma, 2-Europa, 3-Dota\nEnter the game number: '))
-tabNum = int(input('\nOptions for each game:\nGame 1 - {0, 1}\nGame 2 - {0, 1}\nGame 3 - {0, 1, 2, 3}\nEnter the tab number: '))
+# gameNum = int(input('1-Arma, 2-Europa, 3-Dota\nEnter the game number: '))
+gameNum = int(sys.argv[1])
+
+# tabNum = int(input('\nOptions for each game:\nGame 1 - {0, 1}\nGame 2 - {0, 1}\nGame 3 - {0, 1, 2, 3}\nEnter the tab number: '))
+tabNum = int(sys.argv[2])
 
 
 global csvFile, errorFile
