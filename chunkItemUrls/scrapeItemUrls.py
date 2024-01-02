@@ -311,6 +311,7 @@ nextFile, fileNum = True, 0
 
 while (nextFile):
     fileNum += 1
+    print('Reading file:', fName + str(fileNum) + str(fileNum) + '.txt')
     gameItems, nextFile = getItemFromFile(fName, fileNum)
     itemCount = 0
     if len(gameItems) != 0:
