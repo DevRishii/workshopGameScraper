@@ -2,7 +2,7 @@ import selenium
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
+import selenium.common.exceptions
 import time
 import os
 import pandas as pd
@@ -308,6 +308,7 @@ if not os.path.isfile(fName + '1.txt'):
         
 
 nextFile, fileNum = True, 0
+timeouts, timeoutLinks = 0, []
 
 while (nextFile):
     fileNum += 1
@@ -317,9 +318,26 @@ while (nextFile):
     if len(gameItems) != 0:
         for item in gameItems:
             itemCount += 1
-            getItemInfo(driver, item, numItems, gameName, itemType, game, appId)
+            try:
+                getItemInfo(driver, item, numItems, gameName, itemType, game, appId)
+            except TimeoutError as e:
+                sendToErrors(str(e), item, 'TimeoutError for item #' + str(itemCount) + ' out of ' + str(numItems))
+                timeouts += 1
+                timeoutLinks.append(item)
             
             #Prints out progress every 100 items
             if itemCount % 100 == 0:
                 print('Item:', itemCount, 'out of', numItems)
+                
+print('Finished getting', str(itemCount - timeouts), 'items out of' + str(numItems) + ' items from game:', gameName, 'and tab:', itemType)
+print('Number of timeouts:', timeouts)
+
+timeoutFileName = 'chunkItemUrls/timeoutLinks' + str(gameNum) + '.txt'
+
+with open(timeoutFileName, 'w') as file:
+    for link in timeoutLinks:
+        file.write(link + '\n')
+
+print('All items which timed out have been stored in', timeoutFileName)
+print('Please rerun the script to get the items which timed out')
             
